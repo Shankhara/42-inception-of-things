@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: "http://172.18.0.2:8080/root/playground-cbouleng.git"
+    path: .
+    targetRevision: HEAD
+  destination:
+    namespace: dev
+    name: in-cluster
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

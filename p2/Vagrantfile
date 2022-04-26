@@ -1,0 +1,31 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos/stream8"
+  config.vm.box_check_update = false
+
+    machine_name = 'cboulengS'
+	config.vm.define machine_name do |s|
+		s.vm.network 'private_network', ip: '192.168.42.110'
+		s.vm.hostname = machine_name
+
+		s.vm.provision 'shell', inline: <<-SHELL
+			systemctl disable firewalld --now
+			curl -sfL https://get.k3s.io | sh -s - \
+			--node-ip=192.168.42.110 \
+			--write-kubeconfig-mode 644
+			sudo yum install -y net-tools vim
+			echo "alias k='k3s kubectl'" >> /home/vagrant/.bashrc
+            source /home/vagrant/.bashrc
+			/usr/local/bin/kubectl apply -f /vagrant/deployment.yaml
+			/usr/local/bin/kubectl apply -f /vagrant/service.yaml
+			/usr/local/bin/kubectl apply -f /vagrant/ingress.yaml
+		SHELL
+  	
+		s.vm.provider "virtualbox" do |vb|
+  	  vb.memory = "2048"
+  	  vb.cpus = 1
+  	end
+ 	end
+end
